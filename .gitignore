@@ -1,0 +1,6 @@
+input.txt
+test.txt
+tmp
+node_modules
+.DS_Store
+dist
