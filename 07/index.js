@@ -7,6 +7,7 @@ fs.readFile('./input.txt', (err, data) => {
 		lines = input.split('\n');
 
 	const folders = new Map();
+	const increment = (path, size) => folders.set(path, folders.get(path) + size);
 	let currentPath = '';
 
 	for (const line of lines) {
@@ -26,11 +27,19 @@ fs.readFile('./input.txt', (err, data) => {
 			} else if (command === 'ls') {
 				folders.get(currentPath);
 			}
-		} else if (line.indexOf('dir') !== 0)
-			folders.set(
-				currentPath,
-				folders.get(currentPath) + parseInt(line.split(' ')[0])
-			);
+		} else if (line.indexOf('dir') !== 0) {
+			const size = parseInt(line.split(' ')[0]);
+			increment(currentPath, size);
+
+			// Don't forget to also increment size of each parent
+			let parentPath = currentPath;
+			while (parentPath !== '') {
+				if (parentPath !== currentPath) {
+					increment(parentPath, size);
+				}
+				parentPath = parentPath.replace(/[a-z]*\/$/gi, '');
+			}
+		}
 	}
 
 	/*
@@ -42,28 +51,19 @@ fs.readFile('./input.txt', (err, data) => {
 			'/a/e/' => 584,
 			'/d/' => 24933642
 		}
-
-		But each entry does not include the sum of its subfolder size.
-		So let's compute it in inclusiveFolders
 	*/
-	const inclusiveFolders = new Map();
-	folders.forEach((size, path) => {
-		let sum = size;
-		folders.forEach((size2, path2) => {
-			if (path2 !== path && path2.indexOf(path) === 0) sum += size2;
-		});
-		inclusiveFolders.set(path, sum);
-	});
 
-	let firstStar = 0;
-	inclusiveFolders.forEach((size) => {
-		if (size <= 100000) firstStar += size;
-	});
+	const sizes = Array.from(folders.values());
+	const firstStar = sizes.reduce(
+		(sum, size) => (sum += size <= 100000 ? size : 0),
+		0
+	);
 
-	const target = 30000000 - (70000000 - inclusiveFolders.get('/'));
-	const sizes = Array.from(inclusiveFolders.values()).sort((a, b) => a - b);
+	const target = 30000000 - (70000000 - folders.get('/'));
+	const sorted = sizes.sort((a, b) => a - b);
 	let i = 0;
-	while (sizes[i] < target) i++;
-	const secondStar = sizes[i];
+	while (sorted[i] < target) i++;
+	const secondStar = sorted[i];
+
 	console.log({ firstStar, secondStar });
 });
