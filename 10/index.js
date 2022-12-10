@@ -11,7 +11,7 @@ fs.readFile('./input.txt', (err, data) => {
 
 	let r = 1;
 	let cycle = 0;
-	const values = [];
+	let firstStar = 0;
 	const pixels = [''];
 	const run = () => {
 		cycle++;
@@ -19,7 +19,7 @@ fs.readFile('./input.txt', (err, data) => {
 		pixels[pixels.length - 1] +=
 			(p || cycle) >= r && (p || cycle) <= r + 2 ? '#' : '.';
 		if (p === 0) pixels.push('');
-		if (p === 20) values.push(r * cycle);
+		if (p === 20) firstStar += r * cycle;
 	};
 
 	for (const [cmd, n] of lines) {
@@ -29,7 +29,6 @@ fs.readFile('./input.txt', (err, data) => {
 		r += n;
 	}
 
-	const firstStar = values.reduce((sum, v) => (sum += v), 0);
 	const secondStar = pixels.join('\n');
 
 	console.log({ firstStar });
