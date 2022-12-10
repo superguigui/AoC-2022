@@ -11,7 +11,6 @@ fs.readFile('./input.txt', (err, data) => {
 
 	let r = 1;
 	let cycle = 0;
-	const keys = [20, 60, 100, 140, 180, 220]; // hardcoded...
 	const values = [];
 	const pixels = [''];
 	const run = () => {
@@ -20,7 +19,7 @@ fs.readFile('./input.txt', (err, data) => {
 		pixels[pixels.length - 1] +=
 			(p || cycle) >= r && (p || cycle) <= r + 2 ? '#' : '.';
 		if (p === 0) pixels.push('');
-		if (keys.includes(cycle)) values.push(r * cycle);
+		if (p === 20) values.push(r * cycle);
 	};
 
 	for (const [cmd, n] of lines) {
