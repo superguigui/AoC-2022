@@ -16,7 +16,6 @@ fs.readFile('./input.txt', (err, data) => {
 			parseInt(decisionTrue.split('monkey ')[1]),
 		];
 		return {
-			id,
 			items,
 			inspect: new Function('old', `return ${op.split('new = ')[1]}`),
 			divisible,
@@ -28,13 +27,12 @@ fs.readFile('./input.txt', (err, data) => {
 		const items = monkeys.map((m) => [...m.items]);
 		const counts = items.map(() => 0);
 		for (let i = 0; i < rounds; i++) {
-			for (const monkey of monkeys) {
-				while (items[monkey.id].length) {
-					counts[monkey.id]++;
-					const item = modifier(monkey.inspect(items[monkey.id].shift()));
-					items[
-						monkey.destinations[item % monkey.divisible === 0 ? 1 : 0]
-					].push(item);
+			for (let j = 0; j < monkeys.length; j++) {
+				const { inspect, destinations, divisible } = monkeys[j];
+				while (items[j].length) {
+					const item = modifier(inspect(items[j].shift()));
+					counts[j]++;
+					items[destinations[item % divisible === 0 ? 1 : 0]].push(item);
 				}
 			}
 		}
