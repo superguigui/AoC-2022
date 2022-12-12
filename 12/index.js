@@ -15,8 +15,8 @@ fs.readFile('./input.txt', (err, data) => {
 			return c;
 		})
 	);
-	const isVisited = ({ x, y }, history) => history[y][x] === 1;
 	const visit = ({ x, y }, history) => (history[y][x] = 1);
+	const isVisited = ({ x, y }, history) => history[y][x] === 1;
 	const isGoal = ({ x, y }) => x === end.x && y === end.y;
 	const getValue = ({ x, y }) => grid[y][x].toUpperCase().charCodeAt(0) - 65;
 	const getEdges = ({ x, y }) => {
@@ -37,12 +37,12 @@ fs.readFile('./input.txt', (err, data) => {
 			const currentValue = getValue(current);
 			if (isGoal(current)) {
 				let r = current;
-				const path = [];
+				let count = 0;
 				while (r?.parent !== undefined) {
-					path.push([r.x, r.y]);
+					count++;
 					r = r.parent;
 				}
-				return path.length;
+				return count;
 			}
 			for (const next of getEdges(current)) {
 				const nextValue = getValue(next);
