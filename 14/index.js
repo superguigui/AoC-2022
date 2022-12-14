@@ -14,6 +14,11 @@ fs.readFile('./input.txt', (err, data) => {
 	);
 	abyss += 2;
 	const origin = [500, 0];
+	const gridSet = (grid, x, y) => {
+		if (!grid.has(y)) grid.set(y, new Set());
+		grid.get(y).add(x);
+	};
+	const gridCheck = (grid, x, y) => grid.get(y)?.has(x);
 
 	const createGrid = () => {
 		const grid = new Map();
@@ -22,10 +27,8 @@ fs.readFile('./input.txt', (err, data) => {
 				const [x1, y1] = rock[i],
 					[x2, y2] = rock[i + 1];
 				for (let y = Math.min(y1, y2); y <= Math.max(y1, y2); y++) {
-					for (let x = Math.min(x1, x2); x <= Math.max(x1, x2); x++) {
-						if (!grid.has(y)) grid.set(y, new Set());
-						grid.get(y).add(x);
-					}
+					for (let x = Math.min(x1, x2); x <= Math.max(x1, x2); x++)
+						gridSet(grid, x, y);
 				}
 			}
 		}
@@ -39,8 +42,7 @@ fs.readFile('./input.txt', (err, data) => {
 			else if (!tester([x - 1, y + 1])) x--, y++; // down left
 			else if (!tester([x + 1, y + 1])) x++, y++; // down right
 			else {
-				if (!grid.has(y)) grid.set(y, new Set());
-				grid.get(y).add(x);
+				gridSet(grid, x, y);
 				return true;
 			}
 		}
@@ -62,12 +64,12 @@ fs.readFile('./input.txt', (err, data) => {
 	};
 
 	const firstStar = solve(
-		([x, y], grid) => grid.get(y)?.has(x),
+		([x, y], grid) => gridCheck(grid, x, y),
 		([, y]) => y > abyss
 	);
 	const secondStar = solve(
-		([x, y], grid) => grid.get(y)?.has(x) || y >= abyss,
-		(_, grid) => grid.get(origin[1])?.has(origin[0])
+		([x, y], grid) => gridCheck(grid, x, y) || y >= abyss,
+		(_, grid) => gridCheck(grid, ...origin)
 	);
 	console.log({ firstStar, secondStar });
 });
