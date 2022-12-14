@@ -21,15 +21,10 @@ fs.readFile('./input.txt', (err, data) => {
 			for (let i = 0; i < rock.length - 1; i++) {
 				const [x1, y1] = rock[i],
 					[x2, y2] = rock[i + 1];
-				if (y1 === y2) {
-					for (let j = Math.min(x1, x2); j <= Math.max(x1, x2); j++) {
-						if (!grid.has(y1)) grid.set(y1, new Set());
-						grid.get(y1).add(j);
-					}
-				} else if (x1 === x2) {
-					for (let j = Math.min(y1, y2); j <= Math.max(y1, y2); j++) {
-						if (!grid.has(j)) grid.set(j, new Set());
-						grid.get(j).add(x1);
+				for (let y = Math.min(y1, y2); y <= Math.max(y1, y2); y++) {
+					for (let x = Math.min(x1, x2); x <= Math.max(x1, x2); x++) {
+						if (!grid.has(y)) grid.set(y, new Set());
+						grid.get(y).add(x);
 					}
 				}
 			}
