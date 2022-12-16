@@ -18,13 +18,13 @@ fs.readFile('./input.txt', (err, data) => {
 		const aa = Array.isArray(a);
 		const bb = Array.isArray(b);
 		if (aa && bb) {
-			if (eqArrays(a, b)) return undefined;
+			if (eqArrays(a, b)) return 0;
 			if (a.length === 0) return -1;
 			if (b.length === 0) return 1;
 			const newa = [...a];
 			const newb = [...b];
 			let c = compare(newa[0], newb[0]);
-			while (c === undefined) {
+			while (c === 0) {
 				newa.shift();
 				newb.shift();
 				if (newa.length === 0) return -1;
@@ -34,11 +34,7 @@ fs.readFile('./input.txt', (err, data) => {
 			return c;
 		} else if (aa && !bb) return compare(a, [b]);
 		else if (!aa & bb) return compare([a], b);
-		else {
-			if (a < b) return -1;
-			else if (a > b) return 1;
-			return undefined;
-		}
+		else return a - b;
 	};
 
 	const firstStar = pairs.reduce(
