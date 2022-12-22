@@ -3,20 +3,20 @@ import fs from 'fs';
 fs.readFile('./input.txt', (err, data) => {
 	if (err) throw err;
 	const input = data.toString();
-	const valves = input.split('\n').map((l) => {
+	const valveMap = new Map();
+	const toRemove = [];
+	input.split('\n').forEach((l) => {
 		const [id, p, neighbors] =
 			/Valve ([A-Z]+) has .+=([0-9]+);.+valves* ([A-Z, ]*)/gi
 				.exec(l)
 				?.slice(1, 4);
-		return { id, p, neighbors: neighbors.split(', ') };
+
+		valveMap.set(id, { id, p, neighbors: neighbors.split(', ') });
+		if (p <= 0) toRemove.push(id);
 	});
-	const valveMap = new Map();
-	for (const valve of valves) {
-		valveMap.set(valve.id, valve);
-	}
 
 	// For each valve we save it's distance to any other valve
-	const findShortesDistancesBFS = (startId, endId) => {
+	const shortestRoute = (startId, endId) => {
 		const visited = [startId];
 		const queue = [valveMap.get(startId)];
 		while (queue.length) {
@@ -35,15 +35,26 @@ fs.readFile('./input.txt', (err, data) => {
 
 	const distanceMaps = new Map();
 
-	for (const start of valves) {
+	valveMap.forEach((start) => {
 		const map = new Map();
-		for (const end of valves) {
-			if (end.id !== start.id) {
-				map.set(end.id, findShortesDistancesBFS(start.id, end.id));
-			}
-		}
+		valveMap.forEach((end) => {
+			if (end.id !== start.id) map.set(end.id, shortestRoute(start.id, end.id));
+		});
 		distanceMaps.set(start.id, map);
-	}
+	});
+
+	console.log(valveMap.size);
+	toRemove.splice(toRemove.indexOf('AA'), 1);
+	valveMap.forEach((v) => {
+		toRemove.forEach((t) => {
+			const index = v.neighbors.indexOf(t);
+			if (index >= 0) {
+				v.neighbors.splice(index, 1);
+			}
+		});
+	});
+	toRemove.forEach((t) => valveMap.delete(t));
+	console.log(valveMap.size);
 
 	const visit = (id, unexplored) => {
 		const index = unexplored.indexOf(id);
@@ -51,10 +62,14 @@ fs.readFile('./input.txt', (err, data) => {
 		return unexplored;
 	};
 
+	const startingValves = Array.from(valveMap.values())
+		// .filter((v) => v.p > 0)
+		.map((m) => m.id);
+
 	const explore = (startId = 'AA', t, ignores = []) => {
 		const unexplored = visit(
 			startId,
-			valves.filter((v) => v.p > 0 && !ignores.includes(v.id)).map((m) => m.id)
+			startingValves.filter((v) => !ignores.includes(v))
 		);
 		const all = [];
 		const queue = [
@@ -79,7 +94,6 @@ fs.readFile('./input.txt', (err, data) => {
 							(current.score ?? 0) + neighbor.p * (current.t - dt - 1);
 
 						const path = [...current.path, [neighborId, current.t - dt - 1]];
-
 						all.push({
 							path: path.map(([id]) => id).join(','),
 							score: neighbor.score,
@@ -100,20 +114,23 @@ fs.readFile('./input.txt', (err, data) => {
 
 	const [firstStar] = explore('AA', 30);
 
-	const [_, humanPaths] = explore('AA', 26);
-	let secondStar = 0;
-	let i = 0,
-		count = humanPaths.length;
+	let [best, humanPaths] = explore('AA', 26);
+
+	// if Human does not close all viable valves in his run we only have to check the rest of them with the elephant I THINK
+	// if (humanPaths[0].path.split(',').length < startingValves.length) {
+	// 	humanPaths = humanPaths.filter((p) => p.score >= best);
+	// 	console.log(humanPaths.length);
+	// }
 
 	// Test all pairs of possible human path combined with what the elephant has left to do and keep the highest sum of their scores
+	let secondStar = 0;
+	let i = 0;
 	for (const { path, score } of humanPaths) {
+		console.clear();
+		console.log(i, '/', humanPaths.length);
 		const [elephant] = explore('AA', 26, path.split(','));
 		secondStar = Math.max(secondStar, score + elephant);
-		console.clear();
-		console.log({ firstStar });
-		console.log(i + ' / ' + count + ' - ' + secondStar);
 		i++;
 	}
-	console.clear();
 	console.log({ firstStar, secondStar });
 });
